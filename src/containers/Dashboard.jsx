@@ -1,5 +1,6 @@
 import React from 'react';
-// import { connect } from 'react-redux';
+import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useQuery, gql } from '@apollo/client';
 import { useAppContext } from "../libs/contextLib";
 import Button from 'react-bootstrap/Button';
@@ -36,6 +37,7 @@ query {
 function Dashboard() {
   const { userName, authenticateUser } = useAppContext();
   const { loading, error, data } = useQuery(QUERY_FOR_PICKLE_RICK);
+  const dispatch = useDispatch();
 
   if (loading)
     return <p>Loading...</p>;
@@ -44,6 +46,10 @@ function Dashboard() {
     return <p>Error :(</p>;
 
   const { characters: { results } } = data;
+
+  dispatch({
+    type: "fetchCharacters"
+  });
 
   const logoutUser = () => {
     authenticateUser('');
@@ -65,9 +71,8 @@ function Dashboard() {
     </div>
   );
 }
-/*const mapStateToProps = (state) => ({
+const mapStateToProps = (state) => ({
+  characters: state.results
+});
 
-});*/
-
-//export default connect(mapStateToProps)(Dashboard);
-export default Dashboard;
+export default connect(mapStateToProps)(Dashboard);
