@@ -1,11 +1,49 @@
 import React from 'react';
+// import { connect } from 'react-redux';
+import { useQuery, gql } from '@apollo/client';
 import { useAppContext } from "../libs/contextLib";
-import Button from 'react-bootstrap/Button'
-import Provider from '../api/Provider'
+import Button from 'react-bootstrap/Button';
 import Characters from '../components/Characters';
+const QUERY_FOR_PICKLE_RICK = gql`
+query {
+  characters(page: 1) {
+    info {
+      count
+    }
+    results {
+      id
+      image
+      name
+      species
+      gender
+      origin {
+    		name
+  		}
+      location {
+        dimension
+      }
+			status
+    }
+  }
+  location(id: 1) {
+    id
+  }
+  episodesByIds(ids: [1, 2]) {
+    id
+  }
+}`;
 
-export default function Dashboard() {
+function Dashboard() {
   const { userName, authenticateUser } = useAppContext();
+  const { loading, error, data } = useQuery(QUERY_FOR_PICKLE_RICK);
+
+  if (loading)
+    return <p>Loading...</p>;
+
+  if (error || !data || !data.characters || !data.characters.results.length > 0)
+    return <p>Error :(</p>;
+
+  const { characters: { results } } = data;
 
   const logoutUser = () => {
     authenticateUser('');
@@ -23,9 +61,13 @@ export default function Dashboard() {
           <Button className="logout-button" onClick={logoutUser}>Logout</Button>
         </div>
       </div>
-      <Provider>
-        <Characters />
-      </Provider>
+      <Characters characters={results} />
     </div>
   );
 }
+/*const mapStateToProps = (state) => ({
+
+});*/
+
+//export default connect(mapStateToProps)(Dashboard);
+export default Dashboard;
